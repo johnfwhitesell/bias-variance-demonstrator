@@ -1,0 +1,59 @@
+You learned bias-variance wrong.
+
+I have a bone to pick with the way that I was taught bias-variance and I bet it's the way you were taught as well.  You probably saw this graphic:
+
+https://www.kdnuggets.com/wp-content/uploads/bias-and-variance.jpg
+
+The problem here is that it's showing high bias or high variance outcomes while in statistical modeling or machine learning what we care about is high bias or high variance coefficients.  To understand that, look at a chart that illustrates bias and variance in coefficients:
+https://photos.app.goo.gl/AnEnceMYXQ17sJU42
+
+This chart is showing two different models, a biased model in red and a high variance model in blue and the true values shown in black Xs.  First, let's look at the Xs
+
+< put Xs chart here >
+
+For this exercise I simulated 50 samples of 40 datapoints.  To make this simulated data I generated a bunch of independent variables and calculated the predictor from them plus some random noise.  The model to calculate them is shown by those Xs.  Writing it out, the model was:
+
+Y = i + 2*a + 5*a2 +5*s + 0.1* r + 0.1 *n + 0.1* c + 0.1 * e + 6* ε
+
+For instance the X in the row labeled "s" is at positive 5.  That's because I added 5*s to my Y value.  Doing this for all the coefficients (plus a "random noise" term ε) is how the Y values were generated.  Machine learning is about figuring out relationships like these.  So when we fit a model, we are trying to guess where those Xs are.  But in this case I'm deliberately making two bad models.  First let's consider the biased model:
+
+< put biased chart here >
+
+This model found predictions "b" using the equation:
+
+b = i*beta_1 + a*beta_2 + s*b_3 (And yes, they do spell out bias.  That's for a mneumonic you can use after I explain both models).
+
+This only has three terms so it ommits important information which produces a biased model.  This bias is shown by the gap between the red dots and the true value.  The model keeps telling me that the relationship between b and a is that when a goes up by 1, b goes up by 7.  In actuality, when a goes up by 1, b goes up by 2.  That's bias.
+
+Now you might think well if there is a systematic bias, the dart picture was actually not that bad.  My predictions are always going to be missing in the same direction.  Well actually... no they wont.  Look at this graph of residuals (i.e. amount your estimates are off by):
+
+< put bias residuals chart here >
+
+Here the residuals are above 0, your predictions are too low.  Where they are below 0, your predictions are too high.  That's because the term I'm ommitting is a^2, an exponential term.  The model tries to compensate by using a but there is no linear relationship between a and a^2.  As you can see there is a consitent trend but it's not like the darts, always missing in the same direction.  In fact the average miss of a prediction is 0.  It's important to get this point, the systematic error is that our coefficients will always be off in the same way, not that our estimates will always be off in the same way.
+
+Now, let's look at the variance chart:
+
+< put variance chart here >
+
+This is a model that made predictions "v" using the equation:
+
+v = a*beta_1 + r*beta_2 + i*beta_3 + a^2*beta_4 + n*beta_5 + c*beta_6 + e*beta_7 (And yes, these spell out variance.  Remeber that for later).
+
+This model was flawed because I ommitted the term "s" which was important to the generation process.  However I included a bunch of terms with very little predictive power: r, n, c and e.  What will happen is that variation in the bad predictors will sometimes randomly match the variation in our ommitted term.  When these spurious correlations happen, the model with give importance to the bad predictors, thinking they explain the variation that is actually being cause by the ommitted term.  As a result, the estimates for the importance of these terms vary enormously.  And because the model uses all the terms, this noisy process will cause the other estimates to vary enormously as well.
+
+But pay attention to where the centers of these blue clouds are.  Unlike with the biased models, all the estimates for the high variance model are centered around the true values.  So if you averaged all of them, you would get a more accurate result.  However in the real world, we dont have the luxury of just always going out and collecting more and more data.  If your political poll is giving inaccurate results with 1000 respondants because you have a high variance model, it will be prohibitively expensive to go poll another 19,000 people to compensate for your bad model.
+
+The errors of the predictions (i.e. residuals) for the high variance model look like this:
+
+<put variance residuals chart here>
+
+There isn't an obvious pattern like in the bias chart, the inaccuracy just shows up everwhere.  But dont mistake the fact that the accuracy is unpredictable for a rule that high variance models are worse then high bias models.  Even though the errors in the high bias model showed a pattern, they was still errors.  For these particular simulations the high variance model happened to perform worse but what if I extended these to sample at higher values?  This biased model would get worse while this high variance model wouldn't get much worse.  Both bias and variance can produce innacuracy!
+
+Now, putting the models together again, I'll show you one last thing:
+
+<put combined chart here>
+
+Remember that I chose the terms so that one spelled out "bias" while the other spelled out "variance".  The reason I did that is to give you a memory aid examples to remember what kind of models are biased and what kind have high variance.  The word "bias" is shorter then the word "variance".  So the "bias" model has fewer terms in it, i.e. it ommits an important term.  This term is a^2.  I used a^2 in variance to represent the second a, bias only has one a so it doesn't have this term.  There's another thing to keep in mind, if there is a higher order term you aren't considering, you can get bias.  Now, look at "variance".  It has more letters then "bias" so it has more variables in these example.  How did I get more variables?  By including useless terms, i.e. bad predictors.  So if you add too many variables to your model some of them are useless and that's high variance.  This is also called overfitting.  The overfitting is those useless extra variables, because random variations in these terms appear to be useful information, the model fits to those random variations when in truth there is nothing there to fit the model to.  That's why the fitting is so different from case to case.  So hopefully that explanation will give you something you can remember:
+
+Too many variables?  Well variance has more letters then bias so that's variance.
+Not enough variables?  Well bias has fewer letters then variance so that's bias.
